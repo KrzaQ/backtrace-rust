@@ -35,8 +35,7 @@ where
         user_defined: func(),
     };
 
-    std::panic::set_hook(Box::new( move |panic_info| {
+    std::panic::set_hook(Box::new(move |panic_info| {
         sender::submit(&submission_target, &report, panic_info);
     }));
 }
-
