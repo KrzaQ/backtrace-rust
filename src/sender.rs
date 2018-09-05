@@ -8,56 +8,54 @@ use std::collections::HashMap;
 use std::panic::PanicInfo;
 use std::time;
 
-use SubmissionTarget;
 use Report;
+use SubmissionTarget;
 
-pub fn submit(st: &Option<SubmissionTarget>, r: &Option<Report>, _p: &PanicInfo)
-{
+pub fn submit(st: &Option<SubmissionTarget>, r: &Option<Report>, _p: &PanicInfo) {
     let bt = error_chain::Backtrace::new();
 
     let version = rustc_version_runtime::version();
     let version = format!("{}.{}", version.major, version.minor);
 
     println!("{:?}", version);
-    
+
     let ud = match r {
         Some(x) => x.user_defined.clone(),
-        None => panic!("")
+        None => panic!(""),
     };
 
     let st = match st {
         Some(x) => x.clone(),
-        None => panic!("")
+        None => panic!(""),
     };
 
     let mut stack = Vec::new();
 
     for x in bt.frames() {
         for y in x.symbols() {
-
             let line = match y.lineno() {
                 Some(x) => x.to_string(),
-                None => String::new()
+                None => String::new(),
             };
 
             let filename = match y.filename() {
                 Some(x) => String::from(match x.to_str() {
                     Some(w) => w,
-                    None => ""
+                    None => "",
                 }),
-                None => String::new()
+                None => String::new(),
             };
 
             let addr = match y.addr() {
                 Some(x) => format!("{:p}", x),
-                None => String::new()
+                None => String::new(),
             };
 
             let name = match y.name() {
                 Some(x) => x.to_string(),
-                None => String::new()
+                None => String::new(),
             };
- 
+
             let mut elem = HashMap::new();
             elem.insert(String::from("line"), line);
             elem.insert(String::from("filename"), filename);
@@ -71,7 +69,7 @@ pub fn submit(st: &Option<SubmissionTarget>, r: &Option<Report>, _p: &PanicInfo)
         "uuid": uuid::Uuid::new_v4().to_string(),
         "timestamp": get_timestamp(),
         "lang": "Rust",
-        "version": version,
+        "langVersion": version,
         "agent": "backtrace-rust",
         "agentVersion": "0.0.0",
         "mainThread": "main",
@@ -93,14 +91,13 @@ pub fn submit(st: &Option<SubmissionTarget>, r: &Option<Report>, _p: &PanicInfo)
     let client = reqwest::Client::new();
 
     let mut post = client.post(&url);
-    let mut req = post
-                .json(&payload);
+    let mut req = post.json(&payload);
 
     let resp = req.send();
 
     match resp {
         Ok(x) => println!("{:?}", x),
-        Err(error) => println!("{:?}", error)
+        Err(error) => println!("{:?}", error),
     }
 }
 
@@ -108,4 +105,3 @@ fn get_timestamp() -> u64 {
     let now = time::SystemTime::now();
     now.duration_since(time::UNIX_EPOCH).expect("").as_secs()
 }
-
