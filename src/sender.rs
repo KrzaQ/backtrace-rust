@@ -19,7 +19,7 @@ pub fn submit(st: &SubmissionTarget, r: &Report, _p: &PanicInfo) {
 
     println!("{:?}", version);
 
-    let ud = r.user_defined.clone();
+    let ud = &r.user_defined;
 
     let mut stack = Vec::new();
 
