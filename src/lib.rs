@@ -5,12 +5,7 @@ pub mod backtrace;
 mod sender;
 
 use std::collections::HashMap;
-
-#[derive(Debug, Clone)]
-pub struct UserDefined {
-    pub annotations: HashMap<String, String>,
-    pub attributes: HashMap<String, String>,
-}
+use std::panic::PanicInfo;
 
 #[derive(Debug, Clone)]
 pub struct SubmissionTarget {
@@ -18,24 +13,22 @@ pub struct SubmissionTarget {
     url: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Report {
-    user_defined: UserDefined,
+    pub annotations: HashMap<String, String>,
+    pub attributes: HashMap<String, String>,
 }
 
-pub fn register_error_handler<T>(url: &str, token: &str, func: T)
+pub fn register_error_handler<T>(url: &str, token: &str, user_handler: T)
 where
-    T: Fn() -> UserDefined,
+    T: 'static + Fn(&mut Report, &PanicInfo) -> Report + Send + Sync,
 {
     let submission_target = SubmissionTarget {
         token: String::from(token),
         url: String::from(url),
     };
-    let report = Report {
-        user_defined: func(),
-    };
 
     std::panic::set_hook(Box::new(move |panic_info| {
-        sender::submit(&submission_target, &report, panic_info);
+        sender::submit(&submission_target, panic_info, &user_handler);
     }));
 }

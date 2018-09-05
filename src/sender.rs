@@ -11,7 +11,10 @@ use std::time;
 use Report;
 use SubmissionTarget;
 
-pub fn submit(st: &SubmissionTarget, r: &Report, _p: &PanicInfo) {
+pub fn submit<T>(st: &SubmissionTarget, _p: &PanicInfo, user_handler: &T)
+where
+    T: 'static + Fn(&mut Report, &PanicInfo) -> Report + Send + Sync,
+{
     let bt = error_chain::Backtrace::new();
 
     let version = rustc_version_runtime::version();
@@ -19,7 +22,10 @@ pub fn submit(st: &SubmissionTarget, r: &Report, _p: &PanicInfo) {
 
     println!("{:?}", version);
 
-    let ud = &r.user_defined;
+    let mut rr = Report {
+        ..Default::default()
+    };
+    let r = &user_handler(&mut rr, _p);
 
     let mut stack = Vec::new();
 
@@ -65,8 +71,8 @@ pub fn submit(st: &SubmissionTarget, r: &Report, _p: &PanicInfo) {
         "agent": "backtrace-rust",
         "agentVersion": "0.0.0",
         "mainThread": "main",
-        "annotations": ud.annotations,
-        "attributes": ud.attributes,
+        "annotations": r.annotations,
+        "attributes": r.attributes,
         "threads": {
             "main": {
                 "name": "main",
@@ -82,10 +88,7 @@ pub fn submit(st: &SubmissionTarget, r: &Report, _p: &PanicInfo) {
 
     let client = reqwest::Client::new();
 
-    let mut post = client.post(&url);
-    let mut req = post.json(&payload);
-
-    let resp = req.send();
+    let resp = client.post(&url).json(&payload).send();
 
     match resp {
         Ok(x) => println!("{:?}", x),
