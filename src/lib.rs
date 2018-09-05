@@ -27,20 +27,16 @@ pub fn register_error_handler<T>(url: &str, token: &str, func: T)
 where
     T: Fn() -> UserDefined,
 {
-    unsafe {
-        SUBMISSION_TARGET = Some(SubmissionTarget {
-            token: String::from(token),
-            url: String::from(url),
-        });
-        REPORT = Some(Report {
-            user_defined: func(),
-        });
-    }
+    let submission_target = SubmissionTarget {
+        token: String::from(token),
+        url: String::from(url),
+    };
+    let report = Report {
+        user_defined: func(),
+    };
 
-    std::panic::set_hook(Box::new(|panic_info| unsafe {
-        sender::submit(&SUBMISSION_TARGET, &REPORT, panic_info);
+    std::panic::set_hook(Box::new( move |panic_info| {
+        sender::submit(&submission_target, &report, panic_info);
     }));
 }
 
-static mut SUBMISSION_TARGET: Option<SubmissionTarget> = None;
-static mut REPORT: Option<Report> = None;

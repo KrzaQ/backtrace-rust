@@ -11,7 +11,7 @@ use std::time;
 use Report;
 use SubmissionTarget;
 
-pub fn submit(st: &Option<SubmissionTarget>, r: &Option<Report>, _p: &PanicInfo) {
+pub fn submit(st: &SubmissionTarget, r: &Report, _p: &PanicInfo) {
     let bt = error_chain::Backtrace::new();
 
     let version = rustc_version_runtime::version();
@@ -19,15 +19,7 @@ pub fn submit(st: &Option<SubmissionTarget>, r: &Option<Report>, _p: &PanicInfo)
 
     println!("{:?}", version);
 
-    let ud = match r {
-        Some(x) => x.user_defined.clone(),
-        None => panic!(""),
-    };
-
-    let st = match st {
-        Some(x) => x.clone(),
-        None => panic!(""),
-    };
+    let ud = r.user_defined.clone();
 
     let mut stack = Vec::new();
 
@@ -58,9 +50,9 @@ pub fn submit(st: &Option<SubmissionTarget>, r: &Option<Report>, _p: &PanicInfo)
 
             let mut elem = HashMap::new();
             elem.insert(String::from("line"), line);
-            elem.insert(String::from("filename"), filename);
-            elem.insert(String::from("addr"), addr);
-            elem.insert(String::from("name"), name);
+            elem.insert(String::from("library"), filename);
+            elem.insert(String::from("address"), addr);
+            elem.insert(String::from("funcName"), name);
             stack.push(elem);
         }
     }
@@ -77,7 +69,7 @@ pub fn submit(st: &Option<SubmissionTarget>, r: &Option<Report>, _p: &PanicInfo)
         "attributes": ud.attributes,
         "threads": {
             "main": {
-                "name": "main thread",
+                "name": "main",
                 "fault": true,
                 "stack": stack
             }
