@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate serde_json;
 
-pub mod backtrace;
 mod sender;
 
 use std::collections::HashMap;
