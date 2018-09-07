@@ -22,10 +22,10 @@ where
 
     println!("{:?}", version);
 
-    let mut rr = Report {
+    let mut r = Report {
         ..Default::default()
     };
-    let r = &user_handler(&mut rr, _p);
+    let r = &user_handler(&mut r, _p);
 
     let mut stack = Vec::new();
 
