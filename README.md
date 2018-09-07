@@ -46,12 +46,10 @@ fn main() {
     backtrace_rust::register_error_handler(
         "https://UNIVERSE.sp.backtrace.io:6098",
         "YOUR_TOKEN",
-        |r: &mut Report, _: &PanicInfo| -> Report {
+        |r: &mut Report, _| {
             let cpus = num_cpus::get();
             let cpus = cpus.to_string();
             r.attributes.insert(String::from("cpu.cores"), cpus);
-
-            r.clone()
         },
     );
 

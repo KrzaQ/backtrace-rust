@@ -20,7 +20,7 @@ pub struct Report {
 
 pub fn register_error_handler<T>(url: &str, token: &str, user_handler: T)
 where
-    T: 'static + Fn(&mut Report, &PanicInfo) -> Report + Send + Sync,
+    T: Fn(&mut Report, &PanicInfo) -> () + Send + Sync + 'static,
 {
     let submission_target = SubmissionTarget {
         token: String::from(token),

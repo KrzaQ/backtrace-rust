@@ -13,7 +13,7 @@ use SubmissionTarget;
 
 pub fn submit<T>(st: &SubmissionTarget, _p: &PanicInfo, user_handler: &T)
 where
-    T: 'static + Fn(&mut Report, &PanicInfo) -> Report + Send + Sync,
+    T: Fn(&mut Report, &PanicInfo) -> () + Send + Sync + 'static,
 {
     let bt = error_chain::Backtrace::new();
 
@@ -25,7 +25,7 @@ where
     let mut r = Report {
         ..Default::default()
     };
-    let r = &user_handler(&mut r, _p);
+    user_handler(&mut r, _p);
 
     let mut stack = Vec::new();
 
